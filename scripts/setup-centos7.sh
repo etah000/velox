@@ -28,9 +28,10 @@ export CXXFLAGS=$CFLAGS  # Used by boost.
 export CPPFLAGS=$CFLAGS  # Used by LZO.
 export PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib64/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
 FB_OS_VERSION=v2024.02.26.00
+LINUX_DISTRIBUTION=$(. /etc/os-release && echo ${ID})
 
 # shellcheck disable=SC2037
-SUDO="sudo -E"
+SUDO="sudo "
 
 function run_and_time {
   time "$@"
@@ -45,12 +46,6 @@ function yum_install {
   $SUDO yum install -y "$@"
 }
 
-function wget_and_untar {
-  local URL=$1
-  local DIR=$2
-  mkdir -p "${DIR}"
-  wget -q --max-redirect 3 -O - "${URL}" | tar -xz -C "${DIR}" --strip-components=1
-}
 
 function install_cmake {
   cd "${DEPENDENCY_DIR}"
@@ -80,9 +75,9 @@ function install_folly {
 function install_conda {
   cd "${DEPENDENCY_DIR}"
   mkdir -p conda && cd conda
-  wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+  # wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
   MINICONDA_PATH=/opt/miniconda-for-velox
-  bash Miniconda3-latest-Linux-x86_64.sh -b -u $MINICONDA_PATH
+  bash Miniconda3-latest-Linux-aarch64.sh -b -u $MINICONDA_PATH
 }
 
 function install_openssl {
@@ -179,10 +174,15 @@ function install_libhdfs3 {
   cmake_install
 }
 
+function install_libhdfs3 {
+ cd "${DEPENDENCY_DIR}"
+ github_checkout oap-project/libhdfs3 master 
+ cmake_install
+}
+
 function install_protobuf {
   cd "${DEPENDENCY_DIR}"
-  wget https://github.com/protocolbuffers/protobuf/releases/download/v21.4/protobuf-all-21.4.tar.gz
-  tar -xzf protobuf-all-21.4.tar.gz
+  wget_and_untar https://github.com/protocolbuffers/protobuf/releases/download/v21.4/protobuf-all-21.4.tar.gz protobuf-all-21.4
   cd protobuf-21.4
   ./configure  CXXFLAGS="-fPIC"  --prefix=/usr/local
   make "-j$(nproc)"
@@ -197,9 +197,8 @@ function install_awssdk {
 
 function install_gtest {
   cd "${DEPENDENCY_DIR}"
-  wget https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz
-  tar -xzf release-1.12.1.tar.gz
-  cd googletest-release-1.12.1
+  wget_and_untar https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz googletest-1.12
+  cd googletest-1.12
   mkdir -p build && cd build && cmake -DBUILD_GTEST=ON -DBUILD_GMOCK=ON -DINSTALL_GTEST=ON -DINSTALL_GMOCK=ON -DBUILD_SHARED_LIBS=ON ..
   make "-j$(nproc)"
   $SUDO make install
@@ -215,13 +214,12 @@ function install_fmt {
 }
 
 function install_duckdb {
+  cd "${DEPENDENCY_DIR}"
   if $BUILD_DUCKDB ; then
     echo 'Building DuckDB'
-    wget_and_untar https://github.com/duckdb/duckdb/archive/refs/tags/v0.8.1.tar.gz duckdb
-    (
-      cd duckdb
-      cmake_install -DBUILD_UNITTESTS=OFF -DENABLE_SANITIZER=OFF -DENABLE_UBSAN=OFF -DBUILD_SHELL=OFF -DEXPORT_DLL_SYMBOLS=OFF -DCMAKE_BUILD_TYPE=Release
-    )
+    wget_and_untar https://github.com/duckdb/duckdb/archive/refs/tags/v0.8.1.tar.gz  dockdb-v0.8.1
+    cd duckdb-0.8.1
+    cmake_install -DBUILD_UNITTESTS=OFF -DENABLE_SANITIZER=OFF -DENABLE_UBSAN=OFF -DBUILD_SHELL=OFF -DEXPORT_DLL_SYMBOLS=OFF -DCMAKE_BUILD_TYPE=Release
   fi
 }
 
@@ -240,17 +238,22 @@ function install_prerequisites {
 function install_velox_deps {
   run_and_time install_fmt
   run_and_time install_folly
+  run_and_time install_protobuf
+  run_and_time install_libhdfs3
+  run_and_time install_gtest
   run_and_time install_conda
   run_and_time install_duckdb
 }
 
 $SUDO dnf makecache
 
-# dnf install dependency libraries
-dnf_install epel-release dnf-plugins-core # For ccache, ninja
-# PowerTools only works on CentOS8
-# dnf config-manager --set-enabled powertools
-dnf_install ccache git wget which libevent-devel \
+if [[ "$LINUX_DISTRIBUTION" == "centos" ]]; then
+  # dnf install dependency libraries
+  dnf_install epel-release dnf-plugins-core # For ccache, ninja
+fi
+
+dnf_install ccache wget which libevent-devel \
+  yasm \
   openssl-devel libzstd-devel lz4-devel double-conversion-devel \
   curl-devel libxml2-devel libgsasl-devel libuuid-devel patch
 
@@ -264,14 +267,12 @@ dnf_install gettext-devel texinfo help2man
 
 # dnf_install conda
 
-# Activate gcc9; enable errors on unset variables afterwards.
-# GCC9 install via yum and devtoolset
-# dnf install gcc-toolset-9 only works on CentOS8
-
 $SUDO yum makecache
-yum_install centos-release-scl
-yum_install devtoolset-9
-source /opt/rh/devtoolset-9/enable || exit 1
+if [[ "$LINUX_DISTRIBUTION" == "centos" ]]; then
+  yum_install centos-release-scl
+  yum_install devtoolset-9
+  source /opt/rh/devtoolset-9/enable || exit 1
+fi 
 gcc --version
 set -u
 
