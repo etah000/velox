@@ -62,11 +62,12 @@ function install_build_prerequisites {
 
     # Install to /usr/local to make it available to all users.
     ${SUDO} pip3 install cmake==3.28.3
+
+    install_velox_deps_from_apt
 }
 
 # Install packages required for build.
 function install_velox_deps_from_apt {
-  ${SUDO} apt update
   ${SUDO} apt install -y \
     libc-ares-dev \
     libcurl4-openssl-dev \
@@ -181,7 +182,7 @@ function install_arrow {
 
     # Install thrift.
     cd _build/thrift_ep-prefix/src/thrift_ep-build
-    $SUDO cmake --install ./ --prefix /usr/local/
+    $SUDO cmake --install --prefix /usr/local/
   )
 }
 
@@ -197,7 +198,6 @@ function install_cuda {
 }
 
 function install_velox_deps {
-  run_and_time install_velox_deps_from_apt
   run_and_time install_fmt
   run_and_time install_boost
   run_and_time install_folly
@@ -212,7 +212,6 @@ function install_velox_deps {
 
 function install_apt_deps {
   install_build_prerequisites
-  install_velox_deps_from_apt
 }
 
 (return 2> /dev/null) && return # If script was sourced, don't run commands.
