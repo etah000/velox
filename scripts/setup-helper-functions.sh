@@ -43,7 +43,7 @@ function github_checkout {
   shift
   local GIT_CLONE_PARAMS=$@
   local DIRNAME=$(basename $REPO)
-  SUDO="${SUDO:-""}"
+  SUDO="${SUDO:-"sudo --preserve-env"}"
   cd "${DEPENDENCY_DIR}"
   if [ -z "${DIRNAME}" ]; then
     echo "Failed to get repo name from ${REPO}"
@@ -53,7 +53,7 @@ function github_checkout {
     ${SUDO} rm -rf "${DIRNAME}"
   fi
   if [ ! -d "${DIRNAME}" ]; then
-    git clone -q -b $VERSION $GIT_CLONE_PARAMS "https://github.com/${REPO}.git"
+    git clone --progress --shallow-submodules --depth 1 -b $VERSION $GIT_CLONE_PARAMS  --single-branch  "https://github.com/${REPO}.git"
   fi
   cd "${DIRNAME}"
 }
@@ -145,7 +145,9 @@ function wget_and_untar {
   local DIR=$2
   mkdir -p "${DIR}"
   pushd "${DIR}"
-  curl -L "${URL}" > $2.tar.gz
+  if [ ! -f "./$2.tar.gz" ]; then 
+    curl -L "${URL}" > $2.tar.gz
+  fi 
   tar -xz --strip-components=1 -f $2.tar.gz
   popd
 }
@@ -153,7 +155,7 @@ function wget_and_untar {
 function cmake_install {
   local NAME=$(basename "$(pwd)")
   local BINARY_DIR=_build
-  SUDO="${SUDO:-""}"
+  SUDO="${SUDO:-"sudo --preserve-env"}"
   if [ -d "${BINARY_DIR}" ] && prompt "Do you want to rebuild ${NAME}?"; then
     ${SUDO} rm -rf "${BINARY_DIR}"
   fi
