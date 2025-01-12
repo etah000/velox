@@ -163,13 +163,17 @@ function install_lzo {
 }
 
 function install_boost {
+  if [ -f "/usr/local/lib/libboost_log.so.1.84.0" ]; then
+    echo "boost 1.84.0 already installed"
+    return
+  fi
   # Remove old version.
   sudo rm -f /usr/local/lib/libboost_* /usr/lib64/libboost_* /opt/rh/devtoolset-9/root/usr/lib64/dyninst/libboost_*
   sudo rm -rf /tmp/velox-deps/boost/ /usr/local/include/boost/ /usr/local/lib/cmake/Boost-1.72.0/
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.gz boost
   cd boost
-  ./bootstrap.sh --prefix=/usr/local --with-python=/usr/bin/python3 --with-python-root=/usr/lib/python3.6 --without-libraries=python
+  ./bootstrap.sh --prefix=/usr/local --with-python=/usr/bin/python3  --without-libraries=python
   $SUDO ./b2 "-j$(nproc)" -d0 install threading=multi
 }
 
