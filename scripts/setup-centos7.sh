@@ -48,6 +48,11 @@ function yum_install {
 
 
 function install_cmake {
+  version=$(cmake --version)
+  if [ -n "$version" ] &&  [[ *"3.28.3"*  == "$version" ]]; then
+    echo "cmake $version exists"
+    return 
+  fi
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://cmake.org/files/v3.28/cmake-3.28.3.tar.gz cmake-3
   cd cmake-3
@@ -186,6 +191,12 @@ function install_libhdfs3 {
  cmake_install
 }
 
+function install_libhdfs3 {
+ cd "${DEPENDENCY_DIR}"
+ github_checkout oap-project/libhdfs3 master 
+ cmake_install
+}
+
 function install_protobuf {
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/protocolbuffers/protobuf/releases/download/v21.4/protobuf-all-21.4.tar.gz protobuf-all-21.4
@@ -248,7 +259,13 @@ function install_velox_deps {
   run_and_time install_protobuf
   run_and_time install_libhdfs3
   run_and_time install_gtest
+  /home/baicunxiang/opensource/gluten-velox/scripts/setup-adapters.sh aws
   run_and_time install_protobuf
+  run_and_time install_libhdfs3
+  run_and_time install_libhdfs3
+  run_and_time install_gtest
+  run_and_time install_protobuf
+  run_and_time install_libhdfs3
   run_and_time install_libhdfs3
   run_and_time install_libhdfs3
   run_and_time install_gtest
@@ -264,6 +281,7 @@ if [[ "$LINUX_DISTRIBUTION" == "centos" ]]; then
 fi
 
 dnf_install ccache wget which libevent-devel \
+  yasm \
   yasm \
   yasm \
   openssl-devel libzstd-devel lz4-devel double-conversion-devel \
