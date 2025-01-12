@@ -197,6 +197,12 @@ function install_libhdfs3 {
  cmake_install
 }
 
+function install_libhdfs3 {
+ cd "${DEPENDENCY_DIR}"
+ github_checkout oap-project/libhdfs3 master 
+ cmake_install
+}
+
 function install_protobuf {
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/protocolbuffers/protobuf/releases/download/v21.4/protobuf-all-21.4.tar.gz protobuf-all-21.4
@@ -264,7 +270,14 @@ function install_velox_deps {
   run_and_time install_libhdfs3
   run_and_time install_libhdfs3
   run_and_time install_gtest
+  /home/baicunxiang/opensource/gluten-velox/scripts/setup-adapters.sh aws
   run_and_time install_protobuf
+  run_and_time install_libhdfs3
+  run_and_time install_libhdfs3
+  run_and_time install_libhdfs3
+  run_and_time install_gtest
+  run_and_time install_protobuf
+  run_and_time install_libhdfs3
   run_and_time install_libhdfs3
   run_and_time install_libhdfs3
   run_and_time install_libhdfs3
@@ -273,14 +286,14 @@ function install_velox_deps {
   run_and_time install_duckdb
 }
 
-$SUDO dnf makecache
-
 if [[ "$LINUX_DISTRIBUTION" == "centos" ]]; then
+  $SUDO dnf makecache
   # dnf install dependency libraries
   dnf_install epel-release dnf-plugins-core # For ccache, ninja
 fi
 
 dnf_install ccache wget which libevent-devel \
+  yasm \
   yasm \
   yasm \
   yasm \
@@ -297,8 +310,8 @@ dnf_install gettext-devel texinfo help2man
 
 # dnf_install conda
 
-$SUDO yum makecache
 if [[ "$LINUX_DISTRIBUTION" == "centos" ]]; then
+  $SUDO yum makecache
   yum_install centos-release-scl
   yum_install devtoolset-9
   source /opt/rh/devtoolset-9/enable || exit 1
