@@ -148,7 +148,7 @@ function wget_and_untar {
   fi 
   mkdir -p "${DIR}"
   pushd "${DIR}"
-  tar -xz --strip-components=1 -f $2.tar.gz
+  tar -xz --strip-components=1 -f "../$2.tar.gz"
   popd
 }
 
