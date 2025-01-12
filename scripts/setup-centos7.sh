@@ -125,12 +125,6 @@ function install_dwarf {
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/davea42/libdwarf-code/archive/refs/tags/20210528.tar.gz dwarf
   cd dwarf
-  #local URL=https://github.com/davea42/libdwarf-code/releases/download/v0.5.0/libdwarf-0.5.0.tar.xz
-  #local DIR=dwarf
-  #mkdir -p "${DIR}"
-  #wget -q --max-redirect 3 "${URL}"
-  #tar -xf libdwarf-0.5.0.tar.xz -C "${DIR}"
-  #cd dwarf/libdwarf-0.5.0
   ./configure --enable-shared=no
   make
   make check
@@ -255,10 +249,9 @@ function install_gtest {
 } 
 
 function install_fmt {
-  rm -rf /usr/local/lib64/libfmt.a
-  rm -rf /usr/local/lib64/cmake/fmt
-  rm -rf  /usr/local/include/fmt 
-  rm -rf fmt
+  sudo rm -rf /usr/local/lib64/libfmt.a
+  sudo rm -rf /usr/local/lib64/cmake/fmt
+  sudo rm -rf  /usr/local/include/fmt 
   wget_and_untar https://github.com/fmtlib/fmt/archive/10.1.1.tar.gz fmt
   cmake_install fmt -DFMT_TEST=OFF
 }
