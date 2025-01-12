@@ -48,7 +48,7 @@ function yum_install {
 
 
 function install_cmake {
-  version=$(cmake --version)
+  version=$(cmake --version | head -n 1)
   if [ -n "$version" ] &&  [[ *"3.28.3"*  == "$version" ]]; then
     echo "cmake $version exists"
     return 
