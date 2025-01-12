@@ -143,11 +143,11 @@ function get_cxx_flags {
 function wget_and_untar {
   local URL=$1
   local DIR=$2
-  mkdir -p "${DIR}"
-  pushd "${DIR}"
   if [ ! -f "./$2.tar.gz" ]; then 
     curl -L "${URL}" > $2.tar.gz
   fi 
+  mkdir -p "${DIR}"
+  pushd "${DIR}"
   tar -xz --strip-components=1 -f $2.tar.gz
   popd
 }

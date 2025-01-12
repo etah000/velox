@@ -48,7 +48,7 @@ function yum_install {
 
 
 function install_cmake {
-  version=$(cmake --version | head -n 1 | cur -d' ' -f3 )
+  version=$(cmake --version | head -n 1 | cut -d' ' -f3 )
   if [ -n "$version" ] &&  [[ "3.28.3"  == "$version" ]]; then
     echo "cmake $version exists"
     return 
@@ -63,6 +63,11 @@ function install_cmake {
 }
 
 function install_ninja {
+  version=$(ninja --version)
+  if [ -n "$version" ] &&  [[ "1.11.1"  == "$version" ]]; then
+    echo "ninja $version exists"
+    return 
+  fi
   cd "${DEPENDENCY_DIR}"
   github_checkout ninja-build/ninja v1.11.1
   ./configure.py --bootstrap
@@ -215,6 +220,12 @@ function install_libhdfs3 {
  cmake_install
 }
 
+function install_libhdfs3 {
+ cd "${DEPENDENCY_DIR}"
+ github_checkout oap-project/libhdfs3 master 
+ cmake_install
+}
+
 function install_protobuf {
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/protocolbuffers/protobuf/releases/download/v21.4/protobuf-all-21.4.tar.gz protobuf-all-21.4
@@ -303,7 +314,17 @@ function install_velox_deps {
   run_and_time install_libhdfs3
   run_and_time install_libhdfs3
   run_and_time install_gtest
+  /home/baicunxiang/opensource/gluten-velox/scripts/setup-adapters.sh aws
   run_and_time install_protobuf
+  run_and_time install_libhdfs3
+  run_and_time install_libhdfs3
+  run_and_time install_libhdfs3
+  run_and_time install_libhdfs3
+  run_and_time install_libhdfs3
+  run_and_time install_libhdfs3
+  run_and_time install_gtest
+  run_and_time install_protobuf
+  run_and_time install_libhdfs3
   run_and_time install_libhdfs3
   run_and_time install_libhdfs3
   run_and_time install_libhdfs3
@@ -322,6 +343,7 @@ if [[ "$LINUX_DISTRIBUTION" == "centos" ]]; then
 fi
 
 dnf_install ccache wget which libevent-devel \
+  yasm \
   yasm \
   yasm \
   yasm \
@@ -347,8 +369,8 @@ if [[ "$LINUX_DISTRIBUTION" == "centos" ]]; then
   yum_install devtoolset-9
   source /opt/rh/devtoolset-9/enable || exit 1
 fi 
+
 gcc --version
-set -u
 
 # Build from source
 [ -d "$DEPENDENCY_DIR" ] || mkdir -p "$DEPENDENCY_DIR"
