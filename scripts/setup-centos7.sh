@@ -210,6 +210,10 @@ function install_protobuf {
 }
 
 function install_awssdk {
+  if [ -f "/usr/local/lib64/libaws-crt-cpp.a" ] && prompt "Do you want to skip over?"; then
+    echo "already installed!"
+    return
+  fi 
   cd "${DEPENDENCY_DIR}"
   github_checkout aws/aws-sdk-cpp 1.9.379 --depth 1 --recurse-submodules
   cmake_install -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS:BOOL=OFF -DMINIMIZE_SIZE:BOOL=ON -DENABLE_TESTING:BOOL=OFF -DBUILD_ONLY:STRING="s3;identity-management" 
@@ -247,8 +251,8 @@ function install_duckdb {
   fi
 }
 
-function install_prerequisites {
-  echo "nothing to do"
+function install_velox_deps_optional {
+  run_and_time install_awssdk
 }
 
 function install_velox_deps {
@@ -301,5 +305,5 @@ gcc --version
 run_and_time install_cmake
 run_and_time install_ninja
 
-install_prerequisites
+install_velox_deps_optional
 install_velox_deps

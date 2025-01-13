@@ -51,10 +51,11 @@ function github_checkout {
   fi
   if [ ! -d "${DIRNAME}" ]; then
     git clone --progress --shallow-submodules --depth 1 -b $VERSION $GIT_CLONE_PARAMS  --single-branch  "https://github.com/${REPO}.git"
+    cd "${DIRNAME}"
   else
-    git fetch --progress -shallow-submodules --depth 1 origin  $VERSION 
+    cd ${DIRNAME}
+    git fetch --progress  --depth 1 origin  $VERSION 
   fi
-  cd "${DIRNAME}"
 }
 
 # get_cxx_flags [$CPU_ARCH]
