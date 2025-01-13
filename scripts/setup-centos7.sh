@@ -179,48 +179,6 @@ function install_libhdfs3 {
   sed -i "s/dumpversion/dumpfullversion/" ./CMake/Platform.cmake
   sed -i "s/dfs.domain.socket.path\", \"\"/dfs.domain.socket.path\", \"\/var\/lib\/hadoop-hdfs\/dn_socket\"/g" src/common/SessionConfig.cpp
   sed -i "s/pos < endOfCurBlock/pos \< endOfCurBlock \&\& pos \- cursor \<\= 128 \* 1024/g" src/client/InputStreamImpl.cpp
-  cmake_install
-}
-
-function install_libhdfs3 {
- cd "${DEPENDENCY_DIR}"
- github_checkout oap-project/libhdfs3 master 
- cmake_install
-}
-
-function install_libhdfs3 {
- cd "${DEPENDENCY_DIR}"
- github_checkout oap-project/libhdfs3 master 
- cmake_install
-}
-
-function install_libhdfs3 {
- cd "${DEPENDENCY_DIR}"
- github_checkout oap-project/libhdfs3 master 
- cmake_install
-}
-
-function install_libhdfs3 {
- cd "${DEPENDENCY_DIR}"
- github_checkout oap-project/libhdfs3 master 
- cmake_install
-}
-
-function install_libhdfs3 {
- cd "${DEPENDENCY_DIR}"
- github_checkout oap-project/libhdfs3 master 
- cmake_install
-}
-
-function install_libhdfs3 {
- cd "${DEPENDENCY_DIR}"
- github_checkout oap-project/libhdfs3 master 
- cmake_install
-}
-
-function install_libhdfs3 {
- cd "${DEPENDENCY_DIR}"
- github_checkout oap-project/libhdfs3 master 
  cmake_install
 }
 
@@ -281,54 +239,6 @@ function install_prerequisites {
 function install_velox_deps {
   run_and_time install_fmt
   run_and_time install_folly
-  /home/baicunxiang/opensource/gluten-velox/scripts/setup-adapters.sh aws
-  run_and_time install_protobuf
-  run_and_time install_libhdfs3
-  run_and_time install_gtest
-  /home/baicunxiang/opensource/gluten-velox/scripts/setup-adapters.sh aws
-  run_and_time install_protobuf
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_gtest
-  /home/baicunxiang/opensource/gluten-velox/scripts/setup-adapters.sh aws
-  run_and_time install_protobuf
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_gtest
-  /home/baicunxiang/opensource/gluten-velox/scripts/setup-adapters.sh aws
-  run_and_time install_protobuf
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_gtest
-  /home/baicunxiang/opensource/gluten-velox/scripts/setup-adapters.sh aws
-  run_and_time install_protobuf
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_gtest
-  /home/baicunxiang/opensource/gluten-velox/scripts/setup-adapters.sh aws
-  run_and_time install_protobuf
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_gtest
-  run_and_time install_protobuf
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_libhdfs3
-  run_and_time install_gtest
   run_and_time install_conda
   run_and_time install_duckdb
 }
@@ -337,16 +247,9 @@ if [[ "$LINUX_DISTRIBUTION" == "centos" ]]; then
   $SUDO dnf makecache
   # dnf install dependency libraries
   dnf_install epel-release dnf-plugins-core # For ccache, ninja
-fi
-
-dnf_install ccache wget which libevent-devel \
-  yasm \
-  yasm \
-  yasm \
-  yasm \
-  yasm \
-  yasm \
-  yasm \
+# PowerTools only works on CentOS8
+# dnf config-manager --set-enabled powertools
+dnf_install ccache git wget which libevent-devel \
   openssl-devel libzstd-devel lz4-devel double-conversion-devel \
   curl-devel libxml2-devel libgsasl-devel libuuid-devel patch
 
