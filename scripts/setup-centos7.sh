@@ -110,7 +110,7 @@ function install_openssl {
 }
 
 function install_gflags {
-  if [ -f "/usr/local/lib64/libglags.a"  ] && prompt "already installed, do you want to skip over?"; then
+  if [ -f "/usr/local/lib64/libgflags.a"  ] && prompt "already installed, do you want to skip over?"; then
     return 
   fi
   cd "${DEPENDENCY_DIR}"
@@ -230,18 +230,19 @@ function install_fmt {
   fi 
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/fmtlib/fmt/archive/10.1.1.tar.gz fmt
+  cd fmt
   cmake_install fmt -DFMT_TEST=OFF
 }
 
 function install_duckdb {
-  if [ -f "/usr/local/lib64/libfmt.a" ] && prompt "already installed, do you want to skip over?"; then
+  if [ -f "/usr/local/lib/libduckdb_static.a" ] && prompt "already installed, do you want to skip over?"; then
     return
   fi 
   cd "${DEPENDENCY_DIR}"
   if $BUILD_DUCKDB ; then
     echo 'Building DuckDB'
-    wget_and_untar https://github.com/duckdb/duckdb/archive/refs/tags/v0.8.1.tar.gz  dockdb-v0.8.1
-    cd duckdb-v0.8.1
+    wget_and_untar https://github.com/duckdb/duckdb/archive/refs/tags/v0.8.1.tar.gz duckdb
+    cd duckdb
     cmake_install -DBUILD_UNITTESTS=OFF -DENABLE_SANITIZER=OFF -DENABLE_UBSAN=OFF -DBUILD_SHELL=OFF -DEXPORT_DLL_SYMBOLS=OFF -DCMAKE_BUILD_TYPE=Release
   fi
 }
