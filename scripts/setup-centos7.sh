@@ -77,7 +77,8 @@ function install_ninja {
 }
 
 function install_folly {
-  if [ -f "/usr/local/lib/libfolly.a"  ] && prompt "already installed, do you want to skip over?"; then
+  if [ -f "/usr/local/lib/libfolly.a"  ]; then
+    echo "folly already installed"
     return 
   fi
   cd "${DEPENDENCY_DIR}"
@@ -97,7 +98,8 @@ function install_conda {
 }
 
 function install_openssl {
-  if [ -f "/usr/local/include/openssl/bioerr.h"  ] && prompt "Do you want to skip over?"; then
+  if [ -f "/usr/local/include/openssl/bioerr.h" ]; then
+    echo "Already installed!"
     return 
   fi
   cd "${DEPENDENCY_DIR}"
@@ -110,7 +112,8 @@ function install_openssl {
 }
 
 function install_gflags {
-  if [ -f "/usr/local/lib64/libgflags.a"  ] && prompt "already installed, do you want to skip over?"; then
+  if [ -f "/usr/local/lib64/libgflags.a"  ]; then
+    echo "Already installed!"
     return 
   fi
   cd "${DEPENDENCY_DIR}"
@@ -120,7 +123,8 @@ function install_gflags {
 }
 
 function install_glog {
-  if [ -f "/usr/local/lib64/libglog.so.0.5.0"  ] && prompt "already installed, do you want to skip over?"; then
+  if [ -f "/usr/local/lib64/libglog.so.0.5.0"  ]; then
+    echo "Already installed!"
     return 
   fi
   cd "${DEPENDENCY_DIR}"
@@ -130,7 +134,8 @@ function install_glog {
 }
 
 function install_snappy {
-  if [ -f "/usr/local/lib64/libsnappy.a" ] && prompt "already installed, do you want to skip over?"; then
+  if [ -f "/usr/local/lib64/libsnappy.a" ]; then
+    echo "Already installed!"
     return 
   fi 
   cd "${DEPENDENCY_DIR}"
@@ -140,7 +145,8 @@ function install_snappy {
 }
 
 function install_dwarf {
-  if [ -f "/usr/local/lib/libdwarf.a" ] && prompt "already installed, do you want to skip over?"; then
+  if [ -f "/usr/local/lib/libdwarf.a" ]; then
+    echo "Already installed!"
     return 
   fi 
   cd "${DEPENDENCY_DIR}"
@@ -153,6 +159,10 @@ function install_dwarf {
 }
 
 function install_re2 {
+  if [ -f "/usr/local/lib/libre2.a" ]; then
+    echo "Already installed!"
+    return 
+  fi 
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/google/re2/archive/refs/tags/2023-03-01.tar.gz re2
   cd re2
@@ -160,7 +170,8 @@ function install_re2 {
 }
 
 function install_flex {
-  if [ -f "/usr/local/lib/libfl.so.2.0.0" ] && prompt "already installed, do you want to skip over?"; then
+  if [ -f "/usr/local/lib/libfl.so.2.0.0" ]; then
+    echo "already installed!"
     return 
   fi 
   cd "${DEPENDENCY_DIR}"
@@ -172,7 +183,7 @@ function install_flex {
 }
 
 function install_lzo {
-  if [ -f "/usr/local/lib/liblzo2.so.2.0.0" ] && prompt "Do you want to skip over?"; then
+  if [ -f "/usr/local/lib/liblzo2.so.2.0.0" ];  then
     echo "already installed!"
     return
   fi 
@@ -201,16 +212,20 @@ function install_boost {
 
 
 function install_protobuf {
+  if [ -f "/usr/local/lib/libprotobuf.la" ] ; then
+    echo "already installed!"
+    return
+  fi 
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/protocolbuffers/protobuf/releases/download/v21.4/protobuf-all-21.4.tar.gz protobuf-all-21.4
-  cd protobuf-21.4
+  cd protobuf-all-21.4
   ./configure  CXXFLAGS="-fPIC"  --prefix=/usr/local
   make "-j$(nproc)"
   $SUDO make install
 }
 
 function install_awssdk {
-  if [ -f "/usr/local/lib64/libaws-crt-cpp.a" ] && prompt "Do you want to skip over?"; then
+  if [ -f "/usr/local/lib64/libaws-crt-cpp.a" ] ; then
     echo "already installed!"
     return
   fi 
@@ -220,6 +235,10 @@ function install_awssdk {
 }
 
 function install_gtest {
+  if [ -f "/usr/local/lib64/libgtest.so" ] ; then
+    echo "already installed!"
+    return
+  fi 
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz googletest-1.12
   cd googletest-1.12
@@ -229,7 +248,8 @@ function install_gtest {
 } 
 
 function install_fmt {
-  if [ -f "/usr/local/lib64/libfmt.a" ] && prompt "already installed, do you want to skip over?"; then
+  if [ -f "/usr/local/lib64/libfmt.a" ]; then
+    echo "already installed!"
     return
   fi 
   cd "${DEPENDENCY_DIR}"
@@ -239,7 +259,8 @@ function install_fmt {
 }
 
 function install_duckdb {
-  if [ -f "/usr/local/lib/libduckdb_static.a" ] && prompt "already installed, do you want to skip over?"; then
+  if [ -f "/usr/local/lib/libduckdb_static.a" ]; then
+    echo "already installed!"
     return
   fi 
   cd "${DEPENDENCY_DIR}"
@@ -252,6 +273,7 @@ function install_duckdb {
 }
 
 function install_velox_deps_optional {
+  run_and_time install_protobuf
   run_and_time install_awssdk
 }
 
