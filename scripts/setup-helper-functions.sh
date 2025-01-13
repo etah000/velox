@@ -49,11 +49,10 @@ function github_checkout {
     echo "Failed to get repo name from ${REPO}"
     exit 1
   fi
-  if [ -d "${DIRNAME}" ] && prompt "${DIRNAME} already exists. Delete?"; then
-    ${SUDO} rm -rf "${DIRNAME}"
-  fi
   if [ ! -d "${DIRNAME}" ]; then
     git clone --progress --shallow-submodules --depth 1 -b $VERSION $GIT_CLONE_PARAMS  --single-branch  "https://github.com/${REPO}.git"
+  else
+    git fetch --progress -shallow-submodules --depth 1 origin  $VERSION 
   fi
   cd "${DIRNAME}"
 }
@@ -156,9 +155,7 @@ function cmake_install {
   local NAME=$(basename "$(pwd)")
   local BINARY_DIR=_build
   SUDO="${SUDO:-"sudo --preserve-env"}"
-  if [ -d "${BINARY_DIR}" ] && prompt "Do you want to rebuild ${NAME}?"; then
-    ${SUDO} rm -rf "${BINARY_DIR}"
-  fi
+  ${SUDO} rm -rf "${BINARY_DIR}"
   mkdir -p "${BINARY_DIR}"
   CPU_TARGET="${CPU_TARGET:-unknown}"
   COMPILER_FLAGS=$(get_cxx_flags $CPU_TARGET)

@@ -26,7 +26,7 @@ BUILD_DUCKDB="${BUILD_DUCKDB:-true}"
 export CFLAGS=$(get_cxx_flags $CPU_TARGET)  # Used by LZO.
 export CXXFLAGS=$CFLAGS  # Used by boost.
 export CPPFLAGS=$CFLAGS  # Used by LZO.
-export PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib64/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
+export PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib64/pkgconfig:/usr/lib/pkgconfig
 FB_OS_VERSION=v2024.02.26.00
 LINUX_DISTRIBUTION=$(. /etc/os-release && echo ${ID})
 
@@ -77,6 +77,9 @@ function install_ninja {
 }
 
 function install_folly {
+  if [ -f "/usr/local/lib/libfolly.a"  ] && prompt "already installed, do you want to skip over?"; then
+    return 
+  fi
   cd "${DEPENDENCY_DIR}"
   github_checkout facebook/folly "${FB_OS_VERSION}"
   cmake_install -DBUILD_TESTS=OFF -DFOLLY_HAVE_INT128_T=ON
@@ -84,13 +87,19 @@ function install_folly {
 
 function install_conda {
   cd "${DEPENDENCY_DIR}"
+  conda_script="Miniconda3-latest-Linux-${CPU_TARGET}.sh"
   mkdir -p conda && cd conda
-  # wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
+  if [ ! -f "${conda_script}"]; then 
+    wget https://repo.anaconda.com/miniconda/${conda_script}
+  fi
   MINICONDA_PATH=/opt/miniconda-for-velox
-  bash Miniconda3-latest-Linux-aarch64.sh -b -u $MINICONDA_PATH
+  bash ${conda_script} -b -u $MINICONDA_PATH
 }
 
 function install_openssl {
+  if [ -f "/usr/local/include/openssl/bioerr.h"  ] && prompt "Do you want to skip over?"; then
+    return 
+  fi
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1s.tar.gz openssl
   cd openssl
@@ -108,6 +117,9 @@ function install_gflags {
 }
 
 function install_glog {
+  if [ -f "/usr/local/lib64/libglog.so.0.5.0"  ] && prompt "already installed, do you want to skip over?"; then
+    return 
+  fi
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/google/glog/archive/v0.5.0.tar.gz glog
   cd glog
@@ -115,6 +127,9 @@ function install_glog {
 }
 
 function install_snappy {
+  if [ -f "/usr/local/lib64/libsnappy.a" ] && prompt "already installed, do you want to skip over?"; then
+    return 
+  fi 
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/google/snappy/archive/1.1.8.tar.gz snappy
   cd snappy
@@ -122,6 +137,9 @@ function install_snappy {
 }
 
 function install_dwarf {
+  if [ -f "/usr/local/lib/libdwarf.a" ] && prompt "already installed, do you want to skip over?"; then
+    return 
+  fi 
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/davea42/libdwarf-code/archive/refs/tags/20210528.tar.gz dwarf
   cd dwarf
@@ -139,6 +157,9 @@ function install_re2 {
 }
 
 function install_flex {
+  if [ -f "/usr/local/lib/libfl.so.2.0.0" ] && prompt "already installed, do you want to skip over?"; then
+    return 
+  fi 
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz flex
   cd flex
@@ -148,6 +169,10 @@ function install_flex {
 }
 
 function install_lzo {
+  if [ -f "/usr/local/lib/liblzo2.so.2.0.0" ] && prompt "Do you want to skip over?"; then
+    echo "already installed!"
+    return
+  fi 
   cd "${DEPENDENCY_DIR}"
   wget_and_untar http://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz lzo
   cd lzo
@@ -171,16 +196,6 @@ function install_boost {
   $SUDO ./b2 "-j$(nproc)" -d0 install threading=multi
 }
 
-function install_libhdfs3 {
-  cd "${DEPENDENCY_DIR}"
-  github_checkout apache/hawq master
-  cd depends/libhdfs3
-  sed -i "/FIND_PACKAGE(GoogleTest REQUIRED)/d" ./CMakeLists.txt
-  sed -i "s/dumpversion/dumpfullversion/" ./CMake/Platform.cmake
-  sed -i "s/dfs.domain.socket.path\", \"\"/dfs.domain.socket.path\", \"\/var\/lib\/hadoop-hdfs\/dn_socket\"/g" src/common/SessionConfig.cpp
-  sed -i "s/pos < endOfCurBlock/pos \< endOfCurBlock \&\& pos \- cursor \<\= 128 \* 1024/g" src/client/InputStreamImpl.cpp
- cmake_install
-}
 
 function install_protobuf {
   cd "${DEPENDENCY_DIR}"
@@ -207,9 +222,10 @@ function install_gtest {
 } 
 
 function install_fmt {
-  sudo rm -rf /usr/local/lib64/libfmt.a
-  sudo rm -rf /usr/local/lib64/cmake/fmt
-  sudo rm -rf  /usr/local/include/fmt 
+   if [ -f "/usr/local/lib64/libfmt.a" ] && prompt "already installed, do you want to skip over?"; then
+    return
+  fi 
+  cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/fmtlib/fmt/archive/10.1.1.tar.gz fmt
   cmake_install fmt -DFMT_TEST=OFF
 }
@@ -225,6 +241,10 @@ function install_duckdb {
 }
 
 function install_prerequisites {
+  echo "nothing to do"
+}
+
+function install_velox_deps {
   run_and_time install_lzo
   run_and_time install_boost
   run_and_time install_re2
@@ -234,9 +254,6 @@ function install_prerequisites {
   run_and_time install_glog
   run_and_time install_snappy
   run_and_time install_dwarf
-}
-
-function install_velox_deps {
   run_and_time install_fmt
   run_and_time install_folly
   run_and_time install_conda
@@ -247,13 +264,12 @@ if [[ "$LINUX_DISTRIBUTION" == "centos" ]]; then
   $SUDO dnf makecache
   # dnf install dependency libraries
   dnf_install epel-release dnf-plugins-core # For ccache, ninja
+fi 
 # PowerTools only works on CentOS8
 # dnf config-manager --set-enabled powertools
 dnf_install ccache git wget which libevent-devel \
   openssl-devel libzstd-devel lz4-devel double-conversion-devel \
   curl-devel libxml2-devel libgsasl-devel libuuid-devel patch
-
-$SUDO dnf remove -y gflags
 
 # Required for Thrift
 dnf_install autoconf automake libtool bison python3 python3-devel
