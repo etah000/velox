@@ -89,7 +89,7 @@ function install_conda {
   cd "${DEPENDENCY_DIR}"
   conda_script="Miniconda3-latest-Linux-${CPU_TARGET}.sh"
   mkdir -p conda && cd conda
-  if [ ! -f "${conda_script}"]; then 
+  if [ ! -f "${conda_script}" ]; then 
     wget https://repo.anaconda.com/miniconda/${conda_script}
   fi
   MINICONDA_PATH=/opt/miniconda-for-velox
@@ -110,6 +110,9 @@ function install_openssl {
 }
 
 function install_gflags {
+  if [ -f "/usr/local/lib64/libglags.a"  ] && prompt "already installed, do you want to skip over?"; then
+    return 
+  fi
   cd "${DEPENDENCY_DIR}"
   wget_and_untar https://github.com/gflags/gflags/archive/v2.2.2.tar.gz gflags
   cd gflags
@@ -222,7 +225,7 @@ function install_gtest {
 } 
 
 function install_fmt {
-   if [ -f "/usr/local/lib64/libfmt.a" ] && prompt "already installed, do you want to skip over?"; then
+  if [ -f "/usr/local/lib64/libfmt.a" ] && prompt "already installed, do you want to skip over?"; then
     return
   fi 
   cd "${DEPENDENCY_DIR}"
@@ -231,11 +234,14 @@ function install_fmt {
 }
 
 function install_duckdb {
+  if [ -f "/usr/local/lib64/libfmt.a" ] && prompt "already installed, do you want to skip over?"; then
+    return
+  fi 
   cd "${DEPENDENCY_DIR}"
   if $BUILD_DUCKDB ; then
     echo 'Building DuckDB'
     wget_and_untar https://github.com/duckdb/duckdb/archive/refs/tags/v0.8.1.tar.gz  dockdb-v0.8.1
-    cd duckdb-0.8.1
+    cd duckdb-v0.8.1
     cmake_install -DBUILD_UNITTESTS=OFF -DENABLE_SANITIZER=OFF -DENABLE_UBSAN=OFF -DBUILD_SHELL=OFF -DEXPORT_DLL_SYMBOLS=OFF -DCMAKE_BUILD_TYPE=Release
   fi
 }
