@@ -33,6 +33,8 @@ FMT_VERSION=10.1.1
 FB_OS_VERSION=v2024.02.26.00
 BOOST_VERSION=boost-1.84.0
 ARROW_VERSION=15.0.0
+CPR_VERSION=1.10.5
+VELOX_CURL_VERSION=8.4.0
 
 
 function install_fizz {
@@ -289,8 +291,8 @@ function install_protobuf {
     return
   fi 
   cd "${DEPENDENCY_DIR}"
-  wget_and_untar https://github.com/protocolbuffers/protobuf/releases/download/v21.4/protobuf-all-21.4.tar.gz protobuf-all-21.4
-  cd protobuf-all-21.4
+  wget_and_untar https://github.com/protocolbuffers/protobuf/releases/download/v21.4/protobuf-all-21.4.tar.gz protobuf
+  cd protobuf
   ./configure  CXXFLAGS="-fPIC"  --prefix=/usr/local
   make "-j$(nproc)"
   $SUDO make install
@@ -343,23 +345,21 @@ function install_duckdb {
   cmake_install -DBUILD_UNITTESTS=OFF -DENABLE_SANITIZER=OFF -DENABLE_UBSAN=OFF -DBUILD_SHELL=OFF -DEXPORT_DLL_SYMBOLS=OFF -DCMAKE_BUILD_TYPE=Release
 }
 
-function install_velox_deps_optional {
-  run_and_time install_protobuf
-  run_and_time install_awssdk
+function install_cpr {
+  cd "${DEPENDENCY_DIR}"
+  echo 'Building cpr'
+  wget_and_untar "https://github.com/libcpr/cpr/archive/refs/tags/${CPR_VERSION}.tar.gz"  cpr-${CPR_VERSION}
+  cd cpr-${CPR_VERSION}
+  cmake_install -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
 }
 
-function install_velox_deps {
-  run_and_time install_lzo
-  run_and_time install_boost
-  run_and_time install_re2
-  run_and_time install_flex
-  run_and_time install_openssl
-  run_and_time install_gflags
-  run_and_time install_glog
-  run_and_time install_snappy
-  run_and_time install_dwarf
-  run_and_time install_fmt
-  run_and_time install_folly
-  run_and_time install_conda
-  run_and_time install_duckdb
+function install_curl {
+  cd "${DEPENDENCY_DIR}"
+  VELOX_CURL_VERSION_UNDERSCORES=$(echo "${VELOX_CURL_VERSION}" | sed 's/\./_/g' )
+  curl_url="https://github.com/curl/curl/releases/download/curl-${VELOX_CURL_VERSION_UNDERSCORES}/curl-${VELOX_CURL_VERSION}.tar.gz"
+  echo $curl_url 
+  echo 'Building curl'
+  wget_and_untar "curl_url"  curl-${VELOX_CURL_VERSION}
+  cd curl-${VELOX_CURL_VERSION}
+  cmake_install -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
 }

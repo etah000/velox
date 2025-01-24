@@ -93,6 +93,9 @@ function install_velox_deps {
   run_and_time install_mvfst
   run_and_time install_fbthrift
   run_and_time install_arrow
+  run_and_time install_protobuf
+  run_and_time install_curl
+  run_and_time install_cpr
 }
 
 
