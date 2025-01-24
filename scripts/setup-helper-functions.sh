@@ -43,8 +43,6 @@ function github_checkout {
   shift
   local GIT_CLONE_PARAMS=$@
   local DIRNAME=$(basename $REPO)
-  SUDO="${SUDO:-"sudo --preserve-env"}"
-  cd "${DEPENDENCY_DIR}"
   if [ -z "${DIRNAME}" ]; then
     echo "Failed to get repo name from ${REPO}"
     exit 1
@@ -55,6 +53,8 @@ function github_checkout {
   else
     cd ${DIRNAME}
     git fetch --progress  --depth 1 origin  $VERSION 
+    git reset --hard
+    git checkout $VERSION 
   fi
 }
 
@@ -120,19 +120,19 @@ function get_cxx_flags {
   case $CPU_ARCH in
 
     "arm64")
-      echo -n "-mcpu=apple-m1+crc -std=c++17 -fvisibility=hidden $ADDITIONAL_FLAGS"
+      echo -n "-mcpu=apple-m1+crc  -fvisibility=hidden $ADDITIONAL_FLAGS"
     ;;
 
     "avx")
-      echo -n "-mavx2 -mfma -mavx -mf16c -mlzcnt -std=c++17 -mbmi2 $ADDITIONAL_FLAGS"
+      echo -n "-mavx2 -mfma -mavx -mf16c -mlzcnt  -mbmi2 $ADDITIONAL_FLAGS"
     ;;
 
     "sse")
-      echo -n "-msse4.2 -std=c++17 $ADDITIONAL_FLAGS"
+      echo -n "-msse4.2  $ADDITIONAL_FLAGS"
     ;;
 
     "aarch64")
-      echo -n "-mcpu=neoverse-n1 -std=c++17 $ADDITIONAL_FLAGS"
+      echo -n "-mcpu=neoverse-n1  $ADDITIONAL_FLAGS"
     ;;
   *)
     echo -n "Architecture not supported!"
@@ -155,10 +155,9 @@ function wget_and_untar {
 function cmake_install {
   local NAME=$(basename "$(pwd)")
   local BINARY_DIR=_build
-  SUDO="${SUDO:-"sudo --preserve-env"}"
+  INSTALL_PREFIX=${INSTALL_PREFIX:="/usr/local"}
   ${SUDO} rm -rf "${BINARY_DIR}"
   mkdir -p "${BINARY_DIR}"
-  CPU_TARGET="${CPU_TARGET:-unknown}"
   COMPILER_FLAGS=$(get_cxx_flags $CPU_TARGET)
 
   # CMAKE_POSITION_INDEPENDENT_CODE is required so that Velox can be built into dynamic libraries \
@@ -166,8 +165,7 @@ function cmake_install {
     -GNinja \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DCMAKE_CXX_STANDARD=17 \
-    "${INSTALL_PREFIX+-DCMAKE_PREFIX_PATH=}${INSTALL_PREFIX-}" \
-    "${INSTALL_PREFIX+-DCMAKE_INSTALL_PREFIX=}${INSTALL_PREFIX-}" \
+    -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX" \
     -DCMAKE_CXX_FLAGS="$COMPILER_FLAGS" \
     -DBUILD_TESTING=OFF \
     "$@"
